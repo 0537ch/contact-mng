@@ -4,11 +4,11 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1.0000 0 0);
+  --background: #e0e5ec;
   --foreground: oklch(0.3211 0 0);
-  --card: oklch(1.0000 0 0);
+  --card: #e0e5ec;
   --card-foreground: oklch(0.3211 0 0);
-  --popover: oklch(1.0000 0 0);
+  --popover: #e0e5ec;
   --popover-foreground: oklch(0.3211 0 0);
   --primary: oklch(0.6231 0.1880 259.8145);
   --primary-foreground: oklch(1.0000 0 0);
@@ -28,7 +28,7 @@
   --chart-3: oklch(0.4882 0.2172 264.3763);
   --chart-4: oklch(0.4244 0.1809 265.6377);
   --chart-5: oklch(0.3791 0.1378 265.5222);
-  --sidebar: oklch(0.9846 0.0017 247.8389);
+  --sidebar: #e0e5ec;
   --sidebar-foreground: oklch(0.3211 0 0);
   --sidebar-primary: oklch(0.6231 0.1880 259.8145);
   --sidebar-primary-foreground: oklch(1.0000 0 0);
@@ -54,6 +54,11 @@
   --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
   --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+  --shadow-neuro: 9px 9px 16px rgba(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.5);
+  --shadow-neuro-inset: inset 6px 6px 10px rgba(163,177,198,0.7), inset -6px -6px 10px rgba(255,255,255, 0.8);
+  --shadow-neuro-hover: 12px 12px 20px rgba(163,177,198,0.4), -12px -12px 20px rgba(255,255,255, 0.1);
+  --shadow-neuro-button: 6px 6px 12px rgba(163,177,198,0.6), -6px -6px 12px rgba(255,255,255, 0.5);
+  --shadow-neuro-button-active: inset 4px 4px 8px rgba(163,177,198,0.7), inset -4px -4px 8px rgba(255,255,255, 0.8);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 }
@@ -109,6 +114,11 @@
   --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
   --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+  --shadow-neuro: 9px 9px 16px rgba(0,0,0,0.5), -9px -9px 16px rgba(255,255,255, 0.05);
+  --shadow-neuro-inset: inset 6px 6px 10px rgba(0,0,0,0.6), inset -6px -6px 10px rgba(255,255,255, 0.05);
+  --shadow-neuro-hover: 12px 12px 20px rgba(0,0,0,0.4), -12px -12px 20px rgba(255,255,255, 0.05);
+  --shadow-neuro-button: 6px 6px 12px rgba(0,0,0,0.5), -6px -6px 12px rgba(255,255,255, 0.05);
+  --shadow-neuro-button-active: inset 4px 4px 8px rgba(0,0,0,0.6), inset -4px -4px 8px rgba(255,255,255, 0.05);
 }
 
 @theme inline {
@@ -162,6 +172,11 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+  --shadow-neuro: var(--shadow-neuro);
+  --shadow-neuro-inset: var(--shadow-neuro-inset);
+  --shadow-neuro-hover: var(--shadow-neuro-hover);
+  --shadow-neuro-button: var(--shadow-neuro-button);
+  --shadow-neuro-button-active: var(--shadow-neuro-button-active);
 }
 
 @layer base {

@@ -71,12 +71,12 @@ export function ContactActions({
     <>
       <div className="flex items-center justify-between px-2">
         <div className="relative w-72">
-          <IconSearch className="absolute left-2 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <IconSearch className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-500" />
           <Input
             placeholder="Cari kontak..."
             value={searchValue}
             onChange={(e) => onSearchChange?.(e.target.value)}
-            className="pl-8 transition-all duration-200 focus:scale-[1.02]"
+            className="pl-9 bg-[#e0e5ec] shadow-neuro-inset border-0 text-gray-700 placeholder:text-gray-500 rounded-xl"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -84,7 +84,7 @@ export function ContactActions({
             size="sm"
             variant="outline"
             onClick={downloadTemplate}
-            className="transition-all duration-200 hover:scale-105 active:scale-95"
+            className="shadow-neuro-button hover:shadow-neuro-button-active active:shadow-neuro-button-active bg-[#e0e5ec] border-0 text-gray-700 rounded-xl"
           >
             <IconDownload className="mr-2 size-4" />
             Template
@@ -93,7 +93,7 @@ export function ContactActions({
             size="sm"
             variant="outline"
             onClick={() => document.getElementById('csv-upload')?.click()}
-            className="transition-all duration-200 hover:scale-105 active:scale-95"
+            className="shadow-neuro-button hover:shadow-neuro-button-active active:shadow-neuro-button-active bg-[#e0e5ec] border-0 text-gray-700 rounded-xl"
           >
             <IconUpload className="mr-2 size-4" />
             Import CSV
@@ -109,7 +109,7 @@ export function ContactActions({
             <Button
               size="sm"
               onClick={onAddContact}
-              className="transition-all duration-200 hover:scale-105 active:scale-95"
+              className="shadow-neuro-button hover:shadow-neuro-button-active active:shadow-neuro-button-active bg-[#e0e5ec] border-0 text-gray-700 rounded-xl"
             >
               <IconPlus className="mr-2 size-4" />
               Tambah Kontak

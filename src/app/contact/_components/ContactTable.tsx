@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from "react"
-import { IconChevronLeft, IconChevronRight, IconChevronsLeft, IconChevronsRight, IconDotsVertical, IconPlus } from "@tabler/icons-react"
+import { IconChevronLeft, IconChevronRight, IconChevronsLeft, IconChevronsRight, IconDotsVertical, IconPlus, IconUserPlus, IconAlertCircle, IconCheck } from "@tabler/icons-react"
 import { flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable, type ColumnDef, type ColumnFiltersState, type SortingState } from "@tanstack/react-table"
 import { useContactData } from "../_hooks/use-contact"
 import { useCompanies } from "../_hooks/use-companies"
@@ -16,8 +16,10 @@ import { ContactActions } from "./ContactActions"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { ChevronUp, ChevronDown } from "lucide-react"
+import {  Dialog,  DialogContent,  DialogDescription,  DialogFooter,  DialogHeader,  DialogTitle,} from "@/components/ui/dialog"
+import { useGenerateAccount } from "../_hooks/use-generate-account"
 
-const createColumns = (onEdit?: (contact: Contact) => void, onDelete?: (id: number) => void, onViewDetails?: (contact: Contact) => void): ColumnDef<Contact>[] => [
+const createColumns = (onEdit?: (contact: Contact) => void, onDelete?: (id: number) => void, onViewDetails?: (contact: Contact) => void, onGenerateAccount?: (contact: Contact) => void): ColumnDef<Contact>[] => [
   {
     accessorKey: "name",
     header: "Nama",
@@ -42,33 +44,45 @@ const createColumns = (onEdit?: (contact: Contact) => void, onDelete?: (id: numb
     id: "actions",
     enableSorting: false,
     cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-            size="icon"
-          >
-            <IconDotsVertical />
-            <span className="sr-only">Open menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem onClick={() => onEdit?.(row.original)}>
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onViewDetails?.(row.original)}>
-            Lihat Detail
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => onDelete?.(row.original.id)}
-          >
-            Hapus
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          className="text-blue-600 flex size-8 shadow-neuro-button hover:shadow-neuro-button-active active:shadow-neuro-button-active bg-[#e0e5ec] border-0"
+          size="icon"
+          onClick={() => onGenerateAccount?.(row.original)}
+          title="Generate Account"
+        >
+          <IconUserPlus className="h-4 w-4" />
+          <span className="sr-only">Generate Account</span>
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+              size="icon"
+            >
+              <IconDotsVertical />
+              <span className="sr-only">Open menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuItem onClick={() => onEdit?.(row.original)}>
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onViewDetails?.(row.original)}>
+              Lihat Detail
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => onDelete?.(row.original.id)}
+            >
+              Hapus
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     ),
   },
 ]
@@ -87,7 +101,9 @@ export default function ContactTable({ showActions = true, contacts }: { showAct
   const [editingContact, setEditingContact] = React.useState<Contact | null>(null)
   const [viewingContact, setViewingContact] = React.useState<Contact | null>(null)
   const [addContactOpen, setAddContactOpen] = React.useState(false)
-
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false)
+  const [deleteId, setDeleteId] = React.useState<number | null>(null)
+  const [deleteAlertOpen, setDeleteAlertOpen] = React.useState(false)
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [pagination, setPagination] = React.useState({
@@ -103,16 +119,36 @@ export default function ContactTable({ showActions = true, contacts }: { showAct
     setViewingContact(contact)
   }
 
-  const handleDelete = async (id: number) => {
-    if (confirm('Apakah Anda yakin ingin menghapus kontak ini?')) {
-      try {
-        await deleteContact(id)
-      } catch (error) {
-        console.error('Failed to delete contact:', error)
-        alert('Gagal menghapus kontak. Silakan coba lagi.')
-      }
+  const handleDelete = (id: number) => {
+    setDeleteId(id)
+    setDeleteConfirmOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (deleteId === null) return
+    try {
+      await deleteContact(deleteId)
+      setDeleteConfirmOpen(false)
+      setDeleteId(null)
+    } catch (error) {
+      console.error('Failed to delete contact:', error)
+      setDeleteAlertOpen(true)
     }
   }
+
+  const {
+    isGenerating,
+    handleGenerateAccount,
+    confirmGenerateAccount,
+    selectedContact,
+    generateConfirmOpen,
+    setGenerateConfirmOpen,
+    alertData,
+    alertOpen,
+    setAlertOpen,
+  } = useGenerateAccount() 
+
+  
 
   const handleCreate = async (data: Omit<Contact, 'id' | 'parent_name' | 'parent_email'>) => {
     await createContact(data)
@@ -129,7 +165,7 @@ export default function ContactTable({ showActions = true, contacts }: { showAct
     setEditingContact(null)
   }
 
-  const columns = createColumns(handleEdit, handleDelete, handleViewDetails)
+  const columns = createColumns(handleEdit, handleDelete, handleViewDetails, handleGenerateAccount)
 
   const table = useReactTable({
     data: tableContacts || [],
@@ -181,7 +217,7 @@ export default function ContactTable({ showActions = true, contacts }: { showAct
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="overflow-hidden rounded-lg border"
+        className="overflow-hidden rounded-2xl bg-[#e0e5ec] shadow-neuro"
       >
         <Table>
           <TableHeader className="sticky top-0 z-10 bg-linear-to-r from-blue-600/10 via-blue-500/10 to-blue-400/10 backdrop-blur-sm">
@@ -282,7 +318,7 @@ export default function ContactTable({ showActions = true, contacts }: { showAct
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
-                className="hidden size-8 p-0 lg:flex transition-all duration-200 hover:scale-105 active:scale-95"
+                className="hidden size-8 p-0 lg:flex shadow-neuro-button hover:shadow-neuro-button-active active:shadow-neuro-button-active bg-[#e0e5ec] border-0 text-gray-700"
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
               >
@@ -291,7 +327,7 @@ export default function ContactTable({ showActions = true, contacts }: { showAct
               </Button>
               <Button
                 variant="outline"
-                className="size-8 transition-all duration-200 hover:scale-105 active:scale-95"
+                className="size-8 shadow-neuro-button hover:shadow-neuro-button-active active:shadow-neuro-button-active bg-[#e0e5ec] border-0 text-gray-700"
                 size="icon"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
@@ -301,7 +337,7 @@ export default function ContactTable({ showActions = true, contacts }: { showAct
               </Button>
               <Button
                 variant="outline"
-                className="size-8 transition-all duration-200 hover:scale-105 active:scale-95"
+                className="size-8 shadow-neuro-button hover:shadow-neuro-button-active active:shadow-neuro-button-active bg-[#e0e5ec] border-0 text-gray-700"
                 size="icon"
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
@@ -311,7 +347,7 @@ export default function ContactTable({ showActions = true, contacts }: { showAct
               </Button>
               <Button
                 variant="outline"
-                className="hidden size-8 lg:flex transition-all duration-200 hover:scale-105 active:scale-95"
+                className="hidden size-8 lg:flex shadow-neuro-button hover:shadow-neuro-button-active active:shadow-neuro-button-active bg-[#e0e5ec] border-0 text-gray-700"
                 size="icon"
                 onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                 disabled={!table.getCanNextPage()}
@@ -352,6 +388,86 @@ export default function ContactTable({ showActions = true, contacts }: { showAct
         open={!!viewingContact}
         onOpenChange={(open) => !open && setViewingContact(null)}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Hapus Kontak</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus kontak ini? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteConfirmOpen(false)}>
+              Batal
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Generate Account Confirmation Dialog */}
+      <Dialog open={generateConfirmOpen} onOpenChange={setGenerateConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Generate Account</DialogTitle>
+          </DialogHeader>
+          {selectedContact && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">Generate account untuk <strong>{selectedContact.name}</strong>?</p>
+              <div className="bg-muted p-3 rounded-lg text-sm space-y-1">
+                <p><strong>ID:</strong> {selectedContact.nik}</p>
+                <p><strong>Password:</strong> {selectedContact.nik}</p>
+                <p><strong>Email:</strong> {selectedContact.email}</p>
+              </div>
+              <p className="text-destructive text-xs">Pastikan data sudah benar.</p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setGenerateConfirmOpen(false)} disabled={isGenerating}>
+              Batal
+            </Button>
+            <Button onClick={confirmGenerateAccount} disabled={isGenerating}>
+              {isGenerating ? 'Memproses...' : 'Generate'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Alert Dialog */}
+      <Dialog open={alertOpen} onOpenChange={setAlertOpen}>
+        <DialogContent>
+          <div className="flex flex-col items-center gap-4 py-4">
+            {alertData.variant === 'destructive' ? (
+              <IconAlertCircle className="h-12 w-12 text-destructive" />
+            ) : (
+              <IconCheck className="h-12 w-12 text-green-500" />
+            )}
+            <DialogHeader className="text-center">
+              <DialogTitle>{alertData.title}</DialogTitle>
+              <DialogDescription>{alertData.description}</DialogDescription>
+            </DialogHeader>
+            <Button onClick={() => setAlertOpen(false)}>OK</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Error Alert Dialog */}
+      <Dialog open={deleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
+        <DialogContent>
+          <div className="flex flex-col items-center gap-4 py-4">
+            <IconAlertCircle className="h-12 w-12 text-destructive" />
+            <DialogHeader className="text-center">
+              <DialogTitle>Gagal</DialogTitle>
+              <DialogDescription>Gagal menghapus kontak. Silakan coba lagi.</DialogDescription>
+            </DialogHeader>
+            <Button onClick={() => setDeleteAlertOpen(false)}>OK</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   )
 }
